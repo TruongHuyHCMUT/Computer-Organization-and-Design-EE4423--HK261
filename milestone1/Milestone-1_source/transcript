@@ -1,0 +1,62 @@
+# vsim -c -do "run -all; quit -f" tb_vending_machine 
+# Start time: 16:52:32 on Sep 13,2026
+# Loading sv_std.std
+# Loading work.tb_vending_machine
+# Loading work.vending_machine
+# run -all
+# ==================================================================
+#        STARTING VENDING MACHINE SYSTEMVERILOG TESTBENCH           
+# ==================================================================
+# [PASS] Initial Idle: o_soda = 0, o_change = 000 (0 cents)
+# 
+# --- TEST 1: Figure 2 Transaction 1 (10c + wait + 25c = 35c) ---
+# [PASS] After Dime (10c): o_soda = 0, o_change = 000 (0 cents)
+# [PASS] During Idle (hold 10c): o_soda = 0, o_change = 000 (0 cents)
+# [PASS] Dispense Soda + 15c Change (35c - 20c): o_soda = 1, o_change = 011 (15 cents)
+# [PASS] Return to Idle after dispense: o_soda = 0, o_change = 000 (0 cents)
+# 
+# --- TEST 2: Figure 2 Transaction 2 (5c + 10c + 25c = 40c) ---
+# [PASS] After Nickle (5c): o_soda = 0, o_change = 000 (0 cents)
+# [PASS] After Dime (15c): o_soda = 0, o_change = 000 (0 cents)
+# [PASS] Dispense Soda + 20c Change (40c - 20c): o_soda = 1, o_change = 100 (20 cents)
+# [PASS] Return to Idle after dispense: o_soda = 0, o_change = 000 (0 cents)
+# 
+# --- TEST 3: Two Dimes (10c + 10c = 20c, Change 0c) ---
+# [PASS] After Dime 1 (10c): o_soda = 0, o_change = 000 (0 cents)
+# [PASS] Dispense Soda + 0c Change (20c - 20c): o_soda = 1, o_change = 000 (0 cents)
+# [PASS] Return to Idle: o_soda = 0, o_change = 000 (0 cents)
+# 
+# --- TEST 4: Four Nickels (4 x 5c = 20c, Change 0c) ---
+# [PASS] Nickle 1 (5c): o_soda = 0, o_change = 000 (0 cents)
+# [PASS] Nickle 2 (10c): o_soda = 0, o_change = 000 (0 cents)
+# [PASS] Nickle 3 (15c): o_soda = 0, o_change = 000 (0 cents)
+# [PASS] Dispense Soda + 0c Change (20c - 20c): o_soda = 1, o_change = 000 (0 cents)
+# [PASS] Return to Idle: o_soda = 0, o_change = 000 (0 cents)
+# 
+# --- TEST 5: Single Quarter (25c, Change 5c) ---
+# [PASS] Dispense Soda + 5c Change (25c - 20c): o_soda = 1, o_change = 001 (5 cents)
+# [PASS] Return to Idle: o_soda = 0, o_change = 000 (0 cents)
+# 
+# --- TEST 6: Nickle + Quarter (5c + 25c = 30c, Change 10c) ---
+# [PASS] After Nickle (5c): o_soda = 0, o_change = 000 (0 cents)
+# [PASS] Dispense Soda + 10c Change (30c - 20c): o_soda = 1, o_change = 010 (10 cents)
+# [PASS] Return to Idle: o_soda = 0, o_change = 000 (0 cents)
+# 
+# --- TEST 7: 10c + 5c + 10c = 25c -> Change 5c (001) ---
+# [PASS] Dime (10c): o_soda = 0, o_change = 000 (0 cents)
+# [PASS] Nickle (15c): o_soda = 0, o_change = 000 (0 cents)
+# [PASS] Dispense Soda + 5c Change (25c - 20c): o_soda = 1, o_change = 001 (5 cents)
+# [PASS] Return to Idle: o_soda = 0, o_change = 000 (0 cents)
+# 
+# ==================================================================
+#                      TESTBENCH EXECUTION SUMMARY                  
+# ==================================================================
+#  TOTAL CHECKS PASSED : 26
+#  TOTAL CHECKS FAILED : 0
+#  >>> ALL TESTS PASSED SUCCESSFULLY! PERFECT COMPLIANCE! <<<
+# ==================================================================
+# 
+# ** Note: $finish    : tb_vending_machine.sv(247)
+#    Time: 900 ns  Iteration: 1  Instance: /tb_vending_machine
+# End time: 16:52:33 on Sep 13,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0

@@ -1,0 +1,15 @@
+C:/hcmut/HK261/CTMT/Milestone-1/vending_machine.sv {1 {vlog -work work -sv -stats=none C:/hcmut/HK261/CTMT/Milestone-1/vending_machine.sv
+Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+-- Compiling module vending_machine
+
+Top level modules:
+	vending_machine
+
+} {} {}} C:/hcmut/HK261/CTMT/Milestone-1/tb_vending_machine.sv {1 {vlog -work work -sv -stats=none C:/hcmut/HK261/CTMT/Milestone-1/tb_vending_machine.sv
+Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+-- Compiling module tb_vending_machine
+
+Top level modules:
+	tb_vending_machine
+
+} {} {}}

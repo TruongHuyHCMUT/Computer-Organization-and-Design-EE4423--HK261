@@ -1,0 +1,12 @@
+
+State Machine - |vending_machine|state_q
+Name state_q.StDisp15 state_q.StDisp10 state_q.StDisp5 state_q.StDisp0 state_q.St15 state_q.St10 state_q.St5 state_q.StIdle state_q.StDisp20 
+state_q.StIdle 0 0 0 0 0 0 0 0 0 
+state_q.St5 0 0 0 0 0 0 1 1 0 
+state_q.St10 0 0 0 0 0 1 0 1 0 
+state_q.St15 0 0 0 0 1 0 0 1 0 
+state_q.StDisp0 0 0 0 1 0 0 0 1 0 
+state_q.StDisp5 0 0 1 0 0 0 0 1 0 
+state_q.StDisp10 0 1 0 0 0 0 0 1 0 
+state_q.StDisp15 1 0 0 0 0 0 0 1 0 
+state_q.StDisp20 0 0 0 0 0 0 0 1 1 
