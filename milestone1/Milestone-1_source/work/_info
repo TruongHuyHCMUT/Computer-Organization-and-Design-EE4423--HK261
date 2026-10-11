@@ -1,0 +1,58 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+dC:/hcmut/HK261/CTMT
+vtb_vending_machine
+Z0 DXx6 sv_std 3 std 0 22 AD7iAPLo6nTIKk<N0eo=D3
+Z1 !s110 1789299614
+!i10b 1
+!s100 e6]iUBFXz907cjH4=0oA<1
+I4YMkVb4l4A?gU^i1aUZWg1
+Z2 VDg1SIo80bB@j0V0VzS_@n1
+!s105 tb_vending_machine_sv_unit
+S1
+Z3 dC:/hcmut/HK261/CTMT/Milestone-1
+w1789293124
+8C:/hcmut/HK261/CTMT/Milestone-1/tb_vending_machine.sv
+FC:/hcmut/HK261/CTMT/Milestone-1/tb_vending_machine.sv
+L0 6
+Z4 OV;L;10.5b;63
+r1
+!s85 0
+31
+Z5 !s108 1789299614.000000
+!s107 C:/hcmut/HK261/CTMT/Milestone-1/tb_vending_machine.sv|
+!s90 -reportprogress|300|-work|work|-sv|-stats=none|C:/hcmut/HK261/CTMT/Milestone-1/tb_vending_machine.sv|
+!i113 1
+Z6 o-work work -sv
+Z7 tCvgOpt 0
+vvending_machine
+R0
+R1
+!i10b 1
+!s100 d]JKZKO`gToW?P;1WYcKe2
+IOMIi]GQV4h_eQVeNI@dEj3
+R2
+!s105 vending_machine_sv_unit
+S1
+R3
+w1789293139
+8C:/hcmut/HK261/CTMT/Milestone-1/vending_machine.sv
+FC:/hcmut/HK261/CTMT/Milestone-1/vending_machine.sv
+L0 12
+R4
+r1
+!s85 0
+31
+R5
+!s107 C:/hcmut/HK261/CTMT/Milestone-1/vending_machine.sv|
+!s90 -reportprogress|300|-work|work|-sv|-stats=none|C:/hcmut/HK261/CTMT/Milestone-1/vending_machine.sv|
+!i113 1
+R6
+R7

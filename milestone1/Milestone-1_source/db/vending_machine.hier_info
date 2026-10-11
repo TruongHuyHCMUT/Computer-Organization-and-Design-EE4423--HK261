@@ -1,0 +1,25 @@
+|vending_machine
+i_clk => state_q~1.DATAIN
+i_nickle => state_d.DATAA
+i_nickle => state_d.DATAA
+i_dime => state_d.OUTPUTSELECT
+i_dime => state_d.OUTPUTSELECT
+i_dime => state_d.DATAA
+i_quarter => state_d.OUTPUTSELECT
+i_quarter => state_d.OUTPUTSELECT
+i_quarter => state_d.OUTPUTSELECT
+i_quarter => Selector5.IN3
+i_quarter => state_d.StDisp10.DATAB
+i_quarter => state_d.StDisp15.DATAB
+i_quarter => state_d.StDisp20.DATAB
+i_quarter => Selector5.IN4
+i_quarter => Selector5.IN5
+i_quarter => Selector5.IN6
+i_quarter => Selector5.IN7
+i_quarter => Selector5.IN8
+o_soda << WideOr3.DB_MAX_OUTPUT_PORT_TYPE
+o_change[0] << o_change.DB_MAX_OUTPUT_PORT_TYPE
+o_change[1] << o_change.DB_MAX_OUTPUT_PORT_TYPE
+o_change[2] << o_change[2].DB_MAX_OUTPUT_PORT_TYPE
+
+
