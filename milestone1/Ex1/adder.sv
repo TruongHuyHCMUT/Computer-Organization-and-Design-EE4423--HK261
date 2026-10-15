@@ -57,7 +57,9 @@ module FA #(
     output logic [WIDTH-1:0]    sum,
     output logic                cout, o_cin
 );
-    logic [WIDTH-1:0]   w_carry;
+///////logic [WIDTH-1:0]   w_carry; Code cũ
+    logic [WIDTH : 0] w_carry;   //  Code mới đã sửa
+
     assign w_carry[0] = cin;
     genvar i;
     generate 
