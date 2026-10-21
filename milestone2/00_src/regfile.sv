@@ -1,61 +1,183 @@
 // ============================================================================
-// Module: regfile
-// Description: 32×32-bit Register File for RV32I
-//              Dual read ports, single write port
-//              x0 is hardwired to zero (read always returns 0, writes ignored)
+// Module:        regfile
+// Description:   32 x 32-bit General Purpose Register File (x0 to x31)
+//                - Read Ports:  2 asynchronous (combinational) read ports
+//                               (i_rs1_addr -> o_rs1_data, i_rs2_addr -> o_rs2_data)
+//                - Write Port:  1 synchronous write port on posedge i_clk
+//                               enabled by i_rd_wren to i_rd_addr
+//                - Reset:       Asynchronous active-low (i_rstn), clears all registers
+//                - Register x0: Hardwired to zero (read returns 0, writes ignored)
 // ============================================================================
-module regfile(
-  input               i_clk,         // Clock
-  input               i_reset,       // Active-low reset
-  input  [4:0]        i_rs1_addr,    // Read port 1 address
-  input  [4:0]        i_rs2_addr,    // Read port 2 address
-  input  [4:0]        i_rd_addr,     // Write port address
-  input               i_rd_wren,     // Write enable
-  input  [31:0]       i_rd_data,     // Write data
-  output [31:0]       o_rs1_data,    // Read port 1 data
-  output [31:0]       o_rs2_data     // Read port 2 data
-  
-  // output logic [31:0] x0,  x1,  x2,  x3,  x4,  x5,  x6,  x7,
-  // output logic [31:0] x8,  x9,  x10, x11, x12, x13, x14, x15,
-  // output logic [31:0] x16, x17, x18, x19, x20, x21, x22, x23,
-  // output logic [31:0] x24, x25, x26, x27, x28, x29, x30, x31
+module regfile (
+    input logic         clk, rst_n,
+    input logic         i_rd_wren,
+    input logic [4:0]   i_rs1_addr, i_rs2_addr,
+    input logic [4:0]   i_rd_addr,
+    input logic [31:0]  i_rd_data,
+    output logic [31:0] o_rs1_data, o_rs2_data
 );
+    logic [31:0] w_reg [31:0];
+    logic [31:0] w_en;
+    decoder dec_inst (.A0(i_rd_addr[0]), .A1(i_rd_addr[1]), .A2(i_rd_addr[2]), .A3(i_rd_addr[3]), .A4(i_rd_addr[4]), .En(i_rd_wren), .D(w_en));
 
-  logic [31:0] registers [31:0];     // 32 registers
+    // 32-bit register
+    dff_32bit x0 (.clk (clk), .rst_n (rst_n), .en (w_en[0]), .d (32'h0), .q (w_reg[0]));
+    dff_32bit x1 (.clk (clk), .rst_n (rst_n), .en (w_en[1]), .d (i_rd_data), .q (w_reg[1]));
+    dff_32bit x2 (.clk (clk), .rst_n (rst_n), .en (w_en[2]), .d (i_rd_data), .q (w_reg[2]));
+    dff_32bit x3 (.clk (clk), .rst_n (rst_n), .en (w_en[3]), .d (i_rd_data), .q (w_reg[3]));
+    dff_32bit x4 (.clk (clk), .rst_n (rst_n), .en (w_en[4]), .d (i_rd_data), .q (w_reg[4]));
+    dff_32bit x5 (.clk (clk), .rst_n (rst_n), .en (w_en[5]), .d (i_rd_data), .q (w_reg[5]));
+    dff_32bit x6 (.clk (clk), .rst_n (rst_n), .en (w_en[6]), .d (i_rd_data), .q (w_reg[6]));
+    dff_32bit x7 (.clk (clk), .rst_n (rst_n), .en (w_en[7]), .d (i_rd_data), .q (w_reg[7]));
+    dff_32bit x8 (.clk (clk), .rst_n (rst_n), .en (w_en[8]), .d (i_rd_data), .q (w_reg[8]));
+    dff_32bit x9 (.clk (clk), .rst_n (rst_n), .en (w_en[9]), .d (i_rd_data), .q (w_reg[9]));
+    dff_32bit x10 (.clk (clk), .rst_n (rst_n), .en (w_en[10]), .d (i_rd_data), .q (w_reg[10]));
+    dff_32bit x11 (.clk (clk), .rst_n (rst_n), .en (w_en[11]), .d (i_rd_data), .q (w_reg[11]));
+    dff_32bit x12 (.clk (clk), .rst_n (rst_n), .en (w_en[12]), .d (i_rd_data), .q (w_reg[12]));
+    dff_32bit x13 (.clk (clk), .rst_n (rst_n), .en (w_en[13]), .d (i_rd_data), .q (w_reg[13]));
+    dff_32bit x14 (.clk (clk), .rst_n (rst_n), .en (w_en[14]), .d (i_rd_data), .q (w_reg[14]));
+    dff_32bit x15 (.clk (clk), .rst_n (rst_n), .en (w_en[15]), .d (i_rd_data), .q (w_reg[15]));
+    dff_32bit x16 (.clk (clk), .rst_n (rst_n), .en (w_en[16]), .d (i_rd_data), .q (w_reg[16]));
+    dff_32bit x17 (.clk (clk), .rst_n (rst_n), .en (w_en[17]), .d (i_rd_data), .q (w_reg[17]));
+    dff_32bit x18 (.clk (clk), .rst_n (rst_n), .en (w_en[18]), .d (i_rd_data), .q (w_reg[18]));
+    dff_32bit x19 (.clk (clk), .rst_n (rst_n), .en (w_en[19]), .d (i_rd_data), .q (w_reg[19]));
+    dff_32bit x20 (.clk (clk), .rst_n (rst_n), .en (w_en[20]), .d (i_rd_data), .q (w_reg[20]));
+    dff_32bit x21 (.clk (clk), .rst_n (rst_n), .en (w_en[21]), .d (i_rd_data), .q (w_reg[21]));
+    dff_32bit x22 (.clk (clk), .rst_n (rst_n), .en (w_en[22]), .d (i_rd_data), .q (w_reg[22]));
+    dff_32bit x23 (.clk (clk), .rst_n (rst_n), .en (w_en[23]), .d (i_rd_data), .q (w_reg[23]));
+    dff_32bit x24 (.clk (clk), .rst_n (rst_n), .en (w_en[24]), .d (i_rd_data), .q (w_reg[24]));
+    dff_32bit x25 (.clk (clk), .rst_n (rst_n), .en (w_en[25]), .d (i_rd_data), .q (w_reg[25]));
+    dff_32bit x26 (.clk (clk), .rst_n (rst_n), .en (w_en[26]), .d (i_rd_data), .q (w_reg[26]));
+    dff_32bit x27 (.clk (clk), .rst_n (rst_n), .en (w_en[27]), .d (i_rd_data), .q (w_reg[27]));
+    dff_32bit x28 (.clk (clk), .rst_n (rst_n), .en (w_en[28]), .d (i_rd_data), .q (w_reg[28]));
+    dff_32bit x29 (.clk (clk), .rst_n (rst_n), .en (w_en[29]), .d (i_rd_data), .q (w_reg[29]));
+    dff_32bit x30 (.clk (clk), .rst_n (rst_n), .en (w_en[30]), .d (i_rd_data), .q (w_reg[30]));
+    dff_32bit x31 (.clk (clk), .rst_n (rst_n), .en (w_en[31]), .d (i_rd_data), .q (w_reg[31]));
 
-  // Asynchronous read with x0 hardwired to zero
-  assign o_rs1_data = (i_rs1_addr == 5'd0) ? 32'd0 : registers[i_rs1_addr];
-  assign o_rs2_data = (i_rs2_addr == 5'd0) ? 32'd0 : registers[i_rs2_addr];
-
-  // Synchronous write with x0 protection
-  always_ff @(posedge i_clk) begin
-    if (i_rd_wren && (i_rd_addr != 5'd0)) begin
-      // Write to register (except x0)
-      registers[i_rd_addr] <= i_rd_data;
+    always_comb begin
+        case (i_rs1_addr)
+            5'd0: o_rs1_data = w_reg[0];
+            5'd1: o_rs1_data = w_reg[1];
+            5'd2: o_rs1_data = w_reg[2];
+            5'd3: o_rs1_data = w_reg[3];
+            5'd4: o_rs1_data = w_reg[4];
+            5'd5: o_rs1_data = w_reg[5];
+            5'd6: o_rs1_data = w_reg[6];
+            5'd7: o_rs1_data = w_reg[7];
+            5'd8: o_rs1_data = w_reg[8];
+            5'd9: o_rs1_data = w_reg[9];
+            5'd10: o_rs1_data = w_reg[10];
+            5'd11: o_rs1_data = w_reg[11];
+            5'd12: o_rs1_data = w_reg[12];
+            5'd13: o_rs1_data = w_reg[13];
+            5'd14: o_rs1_data = w_reg[14];
+            5'd15: o_rs1_data = w_reg[15];
+            5'd16: o_rs1_data = w_reg[16];
+            5'd17: o_rs1_data = w_reg[17];
+            5'd18: o_rs1_data = w_reg[18];
+            5'd19: o_rs1_data = w_reg[19];
+            5'd20: o_rs1_data = w_reg[20];
+            5'd21: o_rs1_data = w_reg[21];
+            5'd22: o_rs1_data = w_reg[22];
+            5'd23: o_rs1_data = w_reg[23];
+            5'd24: o_rs1_data = w_reg[24];
+            5'd25: o_rs1_data = w_reg[25];
+            5'd26: o_rs1_data = w_reg[26];
+            5'd27: o_rs1_data = w_reg[27];
+            5'd28: o_rs1_data = w_reg[28];
+            5'd29: o_rs1_data = w_reg[29];
+            5'd30: o_rs1_data = w_reg[30];
+            5'd31: o_rs1_data = w_reg[31];
+        endcase
     end
-  end
 
-  // Debug signals for waveform viewing (optional)
- logic [31:0] x0,  x1,  x2,  x3,  x4,  x5,  x6,  x7;
- logic [31:0] x8,  x9,  x10, x11, x12, x13, x14, x15;
- logic [31:0] x16, x17, x18, x19, x20, x21, x22, x23;
- logic [31:0] x24, x25, x26, x27, x28, x29, x30, x31;
+    always_comb begin
+        case (i_rs2_addr)
+            5'd0: o_rs2_data = w_reg[0];
+            5'd1: o_rs2_data = w_reg[1];
+            5'd2: o_rs2_data = w_reg[2];
+            5'd3: o_rs2_data = w_reg[3];
+            5'd4: o_rs2_data = w_reg[4];
+            5'd5: o_rs2_data = w_reg[5];
+            5'd6: o_rs2_data = w_reg[6];
+            5'd7: o_rs2_data = w_reg[7];
+            5'd8: o_rs2_data = w_reg[8];
+            5'd9: o_rs2_data = w_reg[9];
+            5'd10: o_rs2_data = w_reg[10];
+            5'd11: o_rs2_data = w_reg[11];
+            5'd12: o_rs2_data = w_reg[12];
+            5'd13: o_rs2_data = w_reg[13];
+            5'd14: o_rs2_data = w_reg[14];
+            5'd15: o_rs2_data = w_reg[15];
+            5'd16: o_rs2_data = w_reg[16];
+            5'd17: o_rs2_data = w_reg[17];
+            5'd18: o_rs2_data = w_reg[18];
+            5'd19: o_rs2_data = w_reg[19];
+            5'd20: o_rs2_data = w_reg[20];
+            5'd21: o_rs2_data = w_reg[21];
+            5'd22: o_rs2_data = w_reg[22];
+            5'd23: o_rs2_data = w_reg[23];
+            5'd24: o_rs2_data = w_reg[24];
+            5'd25: o_rs2_data = w_reg[25];
+            5'd26: o_rs2_data = w_reg[26];
+            5'd27: o_rs2_data = w_reg[27];
+            5'd28: o_rs2_data = w_reg[28];
+            5'd29: o_rs2_data = w_reg[29];
+            5'd30: o_rs2_data = w_reg[30];
+            5'd31: o_rs2_data = w_reg[31];
+        endcase
+    end
+endmodule
 
-  assign x0  = registers[0];   assign x1  = registers[1];
-  assign x2  = registers[2];   assign x3  = registers[3];
-  assign x4  = registers[4];   assign x5  = registers[5];
-  assign x6  = registers[6];   assign x7  = registers[7];
-  assign x8  = registers[8];   assign x9  = registers[9];
-  assign x10 = registers[10];  assign x11 = registers[11];
-  assign x12 = registers[12];  assign x13 = registers[13];
-  assign x14 = registers[14];  assign x15 = registers[15];
-  assign x16 = registers[16];  assign x17 = registers[17];
-  assign x18 = registers[18];  assign x19 = registers[19];
-  assign x20 = registers[20];  assign x21 = registers[21];
-  assign x22 = registers[22];  assign x23 = registers[23];
-  assign x24 = registers[24];  assign x25 = registers[25];
-  assign x26 = registers[26];  assign x27 = registers[27];
-  assign x28 = registers[28];  assign x29 = registers[29];
-  assign x30 = registers[30];  assign x31 = registers[31];
+module decoder3to8(
+    input logic A0, A1, A2, En,
+    output  logic D0, D1, D2, D3, D4, D5, D6, D7
+);  
+    assign D0 = ~A0 & ~A1 & ~A2 & En;
+    assign D1 =  A0 & ~A1 & ~A2 & En;
+    assign D2 = ~A0 &  A1 & ~A2 & En;
+    assign D3 =  A0 &  A1 & ~A2 & En;
+    assign D4 = ~A0 & ~A1 &  A2 & En;
+    assign D5 =  A0 & ~A1 &  A2 & En;
+    assign D6 = ~A0 &  A1 &  A2 & En;
+    assign D7 =  A0 &  A1 &  A2 & En;   
+endmodule   
 
+
+module decoder2to4 (
+    input logic A0, A1, En,
+    output logic D0, D1, D2, D3
+);
+    assign D0 = ~A1 & ~A0 & En;
+    assign D1 = ~A1 & A0 & En;
+    assign D2 = A1 & ~A0 & En;
+    assign D3 = A1 & A0 & En;    
+endmodule 
+
+module decoder (
+    input logic A0, A1, A2, A3, A4,
+    input logic En,
+    output logic [31:0] D
+);
+    logic [3:0] Decode_sel;
+    decoder2to4 dec_sel(
+        .A0(A3), .A1(A4), .En(En),
+        .D0(Decode_sel[0]), .D1(Decode_sel[1]), .D2(Decode_sel[2]), .D3(Decode_sel[3])
+    );
+    decoder3to8 dec0(
+        .A0(A0), .A1(A1), .A2(A2), .En(Decode_sel[0]),
+        .D0(D[0]), .D1(D[1]), .D2(D[2]), .D3(D[3]), .D4(D[4]), .D5(D[5]), .D6(D[6]), .D7(D[7])
+    );
+    decoder3to8 dec1(
+        .A0(A0), .A1(A1), .A2(A2), .En(Decode_sel[1]),
+        .D0(D[8]), .D1(D[9]), .D2(D[10]), .D3(D[11]), .D4(D[12]), .D5(D[13]), .D6(D[14]), .D7(D[15])
+    );
+    decoder3to8 dec2(
+        .A0(A0), .A1(A1), .A2(A2), .En(Decode_sel[2]),
+        .D0(D[16]), .D1(D[17]), .D2(D[18]), .D3(D[19]), .D4(D[20]), .D5(D[21]), .D6(D[22]), .D7(D[23])
+    );
+    decoder3to8 dec3(
+        .A0(A0), .A1(A1), .A2(A2), .En(Decode_sel[3]),
+        .D0(D[24]), .D1(D[25]), .D2(D[26]), .D3(D[27]), .D4(D[28]), .D5(D[29]), .D6(D[30]), .D7(D[31])
+    );
 endmodule

@@ -1,0 +1,20 @@
+# Quartus & ModelSim generated files
+db/
+incremental_db/
+output_files/
+simulation/
+work/
+transcript
+*.rpt
+*.summary
+*.qmsg
+*.logdb
+*.vcd
+*.sdo
+*.svo
+*.mti
+*.mpf
+*.done
+*.jdi
+*.pin
+*.sld

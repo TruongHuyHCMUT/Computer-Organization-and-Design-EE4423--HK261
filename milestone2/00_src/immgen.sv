@@ -13,7 +13,7 @@ module immgen(
 
   // I-type: imm[11:0] = instr[31:20]
   sign_extend #(.IN_WIDTH(12), .OUT_WIDTH(32)) ext_i (
-    .in(i_instr[31:20]),
+    .in(i_instr[31:20]),  
     .out(imm_i)
   );
 

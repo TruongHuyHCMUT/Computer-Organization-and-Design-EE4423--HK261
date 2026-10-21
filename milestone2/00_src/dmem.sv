@@ -1,48 +1,54 @@
 // ============================================================================
-// Module: dmem
-// Description: Data Memory (DMEM) - 2 KiB word-addressed memory
-//              Asynchronous read, synchronous write with byte enables
-//              Implements single-port BRAM-compatible behavior
+// Module:        dmem
+// Description:   32-bit Data Memory, byte-addressed, Little-Endian
+//                - Capacity: 64 KiB (16384 words x 32 bits) with ADDR_WIDTH = 16
+//                - Address:  0x8008_0000 -> 0x8008_FFFF (START_ADDR to + 2^ADDR_WIDTH - 1)
+//                - Write:    Synchronous with 4-bit byte mask (i_bmsk[3:0])
+//                - Read:     Asynchronous (combinational), out-of-range returns 0
 // ============================================================================
-module dmem(
-  input  logic        i_clk,        // Clock
-  input  logic        i_reset,      // Active-low reset (unused, memory persists)
-  input  logic [10:0] address,      // Byte address [10:0] (2 KiB range)
-  input  logic [31:0] data,         // Write data (32-bit word)
-  input  logic [3:0]  wren,         // Byte write enables [3:0]
-  output logic [31:0] q             // Read data (32-bit word)
+module dmem #(
+    parameter logic [31:0] START_ADDR = 32'h8008_0000,
+    parameter int          ADDR_WIDTH = 16
+) (
+    input logic             i_clk, 
+    input logic             i_wren,
+    input logic  [3:0]      i_bmsk,
+    input logic  [31:0]     i_addr, i_wdata,
+    output logic [31:0]     o_rdata
 );
+    localparam int NUM_WORDS = 1 << (ADDR_WIDTH - 2);
+    localparam int WORD_DEPTH = ADDR_WIDTH - 2;
 
-  localparam DEPTH = 512;             // 512 words × 4 bytes = 2 KiB
+    (* ramstyle = "M10K" *)
+    logic [31:0] mem [0: NUM_WORDS - 1];
 
-  // Memory array with FPGA BRAM synthesis attributes
-  (* ramstyle = "M10K" *)             // Quartus: Force M10K block RAM
-  //(* ram_style = "block" *)           // Vivado: Force block RAM  
-  logic [31:0] mem [0:DEPTH-1];
+    logic                       addr_valid;
+    logic [WORD_DEPTH - 1:0]    word_idx;
 
-  // Initialize memory to zero at simulation start
-  // Contents persist across resets (no reset logic in always_ff)
-//   integer i;
-//   initial begin
-//     for (i = 0; i < DEPTH; i = i + 1)
-//       mem[i] = 32'h00000000;
-//   end
+    always_comb begin
+        case (i_addr[31:ADDR_WIDTH])
+            START_ADDR[31:ADDR_WIDTH]:  addr_valid = 1'b1;
+            default:                    addr_valid = 1'b0;
+        endcase
+    end 
+    
+    assign word_idx     = i_addr[ADDR_WIDTH-1:2]; 
 
-  // Convert byte address to word address
-  logic [8:0] word_addr;
-  assign word_addr = address[10:2];   // Drop lower 2 bits for word alignment
+    always_ff @(posedge i_clk) begin
+        if(i_wren && addr_valid) begin
+            if (i_bmsk[0]) mem[word_idx][7:0]   <= i_wdata[7:0];
+            if (i_bmsk[1]) mem[word_idx][15:8]  <= i_wdata[15:8];
+            if (i_bmsk[2]) mem[word_idx][23:16] <= i_wdata[23:16];
+            if (i_bmsk[3]) mem[word_idx][31:24] <= i_wdata[31:24];
+         end 
+    end 
 
-  // Asynchronous read: output updates combinationally with address
-  assign q = mem[word_addr];
-
-  // Synchronous write with per-byte enables
-  // Implements byte-enable writes without read-modify-write
-  // Infers BRAM with byte enables on FPGA
-  always_ff @(posedge i_clk) begin
-    if (wren[0]) mem[word_addr][7:0]   <= data[7:0];    // Byte 0
-    if (wren[1]) mem[word_addr][15:8]  <= data[15:8];   // Byte 1
-    if (wren[2]) mem[word_addr][23:16] <= data[23:16];  // Byte 2
-    if (wren[3]) mem[word_addr][31:24] <= data[31:24];  // Byte 3
-  end
+    always_comb begin
+        if(addr_valid) begin
+            o_rdata = mem[word_idx];
+        end else begin
+            o_rdata = 32'h0000_0000;
+        end 
+    end 
 
 endmodule
