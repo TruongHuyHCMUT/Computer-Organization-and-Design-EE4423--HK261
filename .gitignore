@@ -18,3 +18,5 @@ transcript
 *.jdi
 *.pin
 *.sld
+*.out
+*.log
