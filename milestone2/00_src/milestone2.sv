@@ -1,5 +1,6 @@
 module milestone2 (
-    input logic     i_clk, rst_n
+    input logic     i_clk, rst_n,
+    output logic    o_db_valid
 );
 // IMEM Signal
     logic [31:0]    imem_addr, imem_data;
@@ -32,7 +33,7 @@ module milestone2 (
         .o_dmem_bmsk    (core_dmem_bmsk),
         .o_dmem_wren    (core_dmem_wren),
         // Debug Inteface 
-        .o_db_valid     ()
+        .o_db_valid     (o_db_valid)
     );
 
     dmem #(

@@ -43,6 +43,7 @@ module singlecyle (
 
 // Write Back signal
     logic [31:0]    wb_data;
+    logic           is_valid_instr;
 //=======================================
 // Instruction Fetch (IF) 
 //=======================================
@@ -157,8 +158,11 @@ module singlecyle (
         .o_opb_sel  (opb_sel),
         .o_mem_wren (mem_wren),
         .o_mem_bmsk (mem_bmsk),     // 4-bit
-        .o_wb_sel   (wb_sel)        // 2-bit
+        .o_wb_sel   (wb_sel),        // 2-bit
+        
+        .is_valid_instr (is_valid_instr)
     );
-
+ 
+    assign o_db_valid = i_rstn & is_valid_instr;
 endmodule
 

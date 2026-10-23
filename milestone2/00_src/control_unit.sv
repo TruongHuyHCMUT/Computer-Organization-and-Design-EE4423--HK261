@@ -11,16 +11,27 @@ module control_unit (
     output logic        o_opb_sel,
     output logic        o_mem_wren,
     output logic [3:0]  o_mem_bmsk,
-    output logic [1:0]  o_wb_sel
+    output logic [1:0]  o_wb_sel,
+
+    output logic        is_valid_instr
 );
     logic [6:0] opcode;
     logic [2:0] funct3;
     logic [6:0] funct7;
-
+    
     assign opcode = i_instr[6:0];
     assign funct3 = i_instr[14:12];
     assign funct7 = i_instr[31:25];
 
+    assign is_valid_instr = (opcode == 0000011) |       // Load (LB, LH, LW, LBU, LHU)
+                            (opcode == 0010011) |       // OP-IMM (ADDI, SLTI, ANDI...)
+                            (opcode == 0010111) |       // AUIPC
+                            (opcode == 0100011) |       // Store (SB, SH, SW)
+                            (opcode == 0110011) |       // OP-Reg (ADD, SUB, SLL...)
+                            (opcode == 0110111) |       // LUI
+                            (opcode == 1100011) |       // Branch (BEQ, BNE, BLT...)
+                            (opcode == 1100111) |       // JALR
+                            (opcode == 1101111);         // JAL
 //===============================================
 // Instantiate
 //================================================
