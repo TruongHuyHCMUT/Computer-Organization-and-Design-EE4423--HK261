@@ -52,7 +52,6 @@ module singlecyle (
     assign is_jalr = (i_imem_rdata[6:0] == 7'b1100111);
     assign alu_data_jalr = {alu_data[31:1], 1'b0};
 
-
     FA_32bit u_adder4 (
         .A      (pc),
         .B      (32'h4),
@@ -61,11 +60,12 @@ module singlecyle (
         .Cout   ()
     );
 
-    assign 
+    assign pc_next = (pc_sel == 1'b0) ? pc_four : (is_jalr ? alu_data_jalr : alu_data);
+
     pc u_pc (
         .i_clk  (i_clk),
         .i_rstn (i_rstn),
-        .d      (),
+        .d      (pc_next),
         .q      (o_imem_addr)
     );
     assign pc = o_imem_addr;
@@ -79,7 +79,7 @@ module singlecyle (
     regfile u_regfile (
         .clk        (i_clk),
         .rst_n      (i_rstn),
-        .i_rd_wren  (rd_wren),                 // 1-bit
+        .i_rd_wren  (rd_wren),          // 1-bit
         .i_rd_addr  (rd_addr),          // 5-bit
         .i_rs1_addr (rs1_addr),         // 5-bit
         .i_rs2_addr (rs2_addr),         // 5-bit
