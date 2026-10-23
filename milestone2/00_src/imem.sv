@@ -7,19 +7,17 @@ module imem #(
     input logic [31:0]  i_addr,
     output logic [31:0] o_data
 );
-    localparam int unsigned MEM_DEPTH = 1 << (ADDR_WIDTH - 2);
-    logic [31:0] imem [0:MEM_DEPTH-1];
+    localparam int unsigned MEM_DEPTH = (1 << ADDR_WIDTH);
+    logic [7:0] mem [0: MEM_DEPTH];
 
-    logic [31:0]    addr_offset;
-    assign addr_offset = i_addr - START_ADDR;
-    
-    logic [ADDR_WIDTH-3:0] word_idx;
-    assign word_idx = addr_offset[ADDR_WIDTH-1:2];
-
-    assign o_data = imem[word_idx];
-    
     initial begin
-        $readmemh(PROGRAMFILE, imem);
+        $readmemh(PROGRAMFILE, mem);
     end
-
+    
+    always_comb begin
+        o_data[7:0]   = mem[{i_addr[ADDR_WIDTH-1:2], 2'b00}];
+        o_data[15:8]  = mem[{i_addr[ADDR_WIDTH-1:2], 2'b01}];
+        o_data[23:16] = mem[{i_addr[ADDR_WIDTH-1:2], 2'b10}];
+        o_data[31:24] = mem[{i_addr[ADDR_WIDTH-1:2], 2'b11}];
+    end 
 endmodule

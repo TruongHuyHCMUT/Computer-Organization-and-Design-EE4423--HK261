@@ -107,7 +107,10 @@ module lsu (
             endcase
         end 
     end 
-
+    
+//============================================================================
+// Memory Interface Assignments
+//============================================================================
     assign o_dmem_addr = i_lsu_addr;
     assign o_dmem_wren = i_lsu_wren && !misaligned_flag;
 endmodule
