@@ -21,7 +21,7 @@ module brc(
   always_comb begin
     o_br_equal = eq_mag;
 
-    if (i_br_un) begin
+    if (!i_br_un) begin
       // Signed comparison: check sign bits first
         if (i_rs1_data[31] != i_rs2_data[31]) begin
             o_br_less = (i_rs1_data[31] == 1'b1);  // Negative < Positive

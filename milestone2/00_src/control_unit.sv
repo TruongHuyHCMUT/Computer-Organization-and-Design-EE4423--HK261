@@ -121,7 +121,7 @@ module MainDecode (
 //==========================================================================
     always_comb begin
         if (is_branch) begin
-            o_br_un = ~(funct3[2:1] == 2'b11);
+            o_br_un = (funct3[2:1] == 2'b11);           // High = unsigned; Low = signed
             case (funct3) 
                 3'b000: o_pc_sel = i_br_equal;          // BEQ : take if equal
                 3'b001: o_pc_sel = ~i_br_equal;         // BNE: take if not equal
