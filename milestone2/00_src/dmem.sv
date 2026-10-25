@@ -25,6 +25,13 @@ module dmem #(
     logic                       addr_valid;
     logic [WORD_DEPTH - 1:0]    word_idx;
 
+    initial begin 
+        for (int i = 0; i < NUM_WORDS; i++) begin
+            mem[i] = 32'h0000_0000;
+        end 
+    end 
+
+    
     always_comb begin
         case (i_addr[31:ADDR_WIDTH])
             START_ADDR[31:ADDR_WIDTH]:  addr_valid = 1'b1;

@@ -14,9 +14,11 @@ module regfile (
     input logic [4:0]   i_rs1_addr, i_rs2_addr,
     input logic [4:0]   i_rd_addr,
     input logic [31:0]  i_rd_data,
+
+    output logic [31:0] w_reg [31:0],
     output logic [31:0] o_rs1_data, o_rs2_data
 );
-    logic [31:0] w_reg [31:0];
+    //logic [31:0] w_reg [31:0];
     logic [31:0] w_en;
     decoder dec_inst (.A0(i_rd_addr[0]), .A1(i_rd_addr[1]), .A2(i_rd_addr[2]), .A3(i_rd_addr[3]), .A4(i_rd_addr[4]), .En(i_rd_wren), .D(w_en));
 

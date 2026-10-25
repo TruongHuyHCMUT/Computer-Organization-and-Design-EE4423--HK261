@@ -1,0 +1,309 @@
+`timescale 1ns / 1ps
+
+module tb_dmem_ex6;
+
+  // ---------------------------------------------------------------------------
+  // 1. Tham số cấu hình (Khớp với module dmem của bạn)
+  // ---------------------------------------------------------------------------
+  localparam logic [31:0] START_ADDR = 32'h8008_0000;
+  localparam int          ADDR_WIDTH = 16;              // 64 KiB
+  localparam int unsigned MEM_SIZE   = (1 << ADDR_WIDTH);
+  localparam int unsigned NUM_WORDS  = 1 << (ADDR_WIDTH - 2);
+  localparam time         CLK_PERIOD = 10ns;
+
+  // ---------------------------------------------------------------------------
+  // 2. Tín hiệu kết nối DUT
+  // ---------------------------------------------------------------------------
+  logic        clk;
+  logic        wren;
+  logic [3:0]  bmsk;
+  logic [31:0] addr;
+  logic [31:0] wdata;
+  logic [31:0] rdata;
+
+  int error_count = 0;
+  int test_count  = 0;
+
+  // ---------------------------------------------------------------------------
+  // 3. Khởi tạo DUT
+  // ---------------------------------------------------------------------------
+  dmem #(
+      .START_ADDR(START_ADDR),
+      .ADDR_WIDTH(ADDR_WIDTH)
+  ) dut (
+      .i_clk  (clk),
+      .i_wren (wren),
+      .i_bmsk (bmsk),
+      .i_addr (addr),
+      .i_wdata(wdata),
+      .o_rdata(rdata)
+  );
+
+  // ---------------------------------------------------------------------------
+  // 4. Tạo xung nhịp Clock (100 MHz)
+  // ---------------------------------------------------------------------------
+  initial begin
+    clk = 1'b0;
+    forever #(CLK_PERIOD / 2) clk = ~clk;
+  end
+
+  // ---------------------------------------------------------------------------
+  // 5. Golden Reference Model (Shadow Memory)
+  // ---------------------------------------------------------------------------
+  logic [31:0] shadow_mem [0:NUM_WORDS-1];
+
+  function automatic logic is_valid_addr(input logic [31:0] a);
+    return (a[31:ADDR_WIDTH] == START_ADDR[31:ADDR_WIDTH]);
+  endfunction
+
+  function automatic logic [31:0] read_shadow_mem(input logic [31:0] a);
+    int unsigned word_idx;
+    if (!is_valid_addr(a)) begin
+      return 32'h0000_0000;
+    end
+    word_idx = a[ADDR_WIDTH-1:2];
+    return shadow_mem[word_idx];
+  endfunction
+
+  function automatic void write_shadow_mem(
+      input logic [31:0] a,
+      input logic [31:0] d,
+      input logic [3:0]  mask
+  );
+    int unsigned word_idx;
+    if (is_valid_addr(a)) begin
+      word_idx = a[ADDR_WIDTH-1:2];
+      if (mask[0]) shadow_mem[word_idx][7:0]   = d[7:0];
+      if (mask[1]) shadow_mem[word_idx][15:8]  = d[15:8];
+      if (mask[2]) shadow_mem[word_idx][23:16] = d[23:16];
+      if (mask[3]) shadow_mem[word_idx][31:24] = d[31:24];
+    end
+  endfunction
+
+  // ---------------------------------------------------------------------------
+  // 6. Các tác vụ kiểm thử (Verification Tasks)
+  // ---------------------------------------------------------------------------
+  task automatic check_read(
+      input logic [31:0] test_addr,
+      input logic [31:0] exp_data,
+      input string       tag
+  );
+    test_count++;
+    addr = test_addr;
+    #1ns; // Đợi trễ tổ hợp của mạch đọc bất đồng bộ lan truyền
+    if (rdata !== exp_data) begin
+      $error("[%0t] [FAIL] %s | Addr: 0x%08h | Exp: 0x%08h, Got: 0x%08h", 
+             $time, tag, test_addr, exp_data, rdata);
+      error_count++;
+    end else begin
+      $display("[%0t] [PASS] %s | Addr: 0x%08h, Data: 0x%08h", 
+               $time, tag, test_addr, rdata);
+    end
+  endtask
+
+  task automatic write_mem(
+      input logic [31:0] target_addr,
+      input logic [31:0] data,
+      input logic [3:0]  mask
+  );
+    @(posedge clk);
+    #1ps;
+    addr  = target_addr;
+    wdata = data;
+    bmsk  = mask;
+    wren  = 1'b1;
+
+    @(posedge clk);
+    #1ps;
+    write_shadow_mem(target_addr, data, mask);
+    wren  = 1'b0;
+    bmsk  = 4'b0000;
+  endtask
+
+  // ---------------------------------------------------------------------------
+  // 7. Quy trình kiểm thử chính (Directed Tests trước -> Random Tests sau)
+  // ---------------------------------------------------------------------------
+  initial begin
+    // Khởi tạo các tín hiệu ngõ vào ban đầu
+    addr  = START_ADDR;
+    wdata = 32'h0;
+    bmsk  = 4'h0;
+    wren  = 1'b0;
+
+    for (int i = 0; i < NUM_WORDS; i++) begin
+      shadow_mem[i] = 32'h0000_0000;
+    end
+
+    repeat (2) @(posedge clk);
+
+    $display("================================================================");
+    $display(" STARTING VERIFICATION: Data Memory (Asynchronous Read)");
+    $display(" Base: 0x%08h, Width: %0d bits (Capacity: 64 KiB)", START_ADDR, ADDR_WIDTH);
+    $display("================================================================");
+
+    // =========================================================================
+    // PHẦN I: CÁC TESTCASE CÓ CHỦ ĐÍCH (DIRECTED TESTS)
+    // =========================================================================
+
+    // -------------------------------------------------------------------------
+    // Case 1: Giản đồ mẫu theo đặc tả bài Lab (Hình 7 - Waveform Reference)
+    // -------------------------------------------------------------------------
+    $display("\n>>> [DIRECTED CASE 1] Milestone Waveform Sequence <<<");
+    // Bước 1: Ghi đầy đủ word 0xAABB_CCDD vào địa chỉ 0x8008_0104 (bmsk = 4'b1111)
+    write_mem(32'h8008_0104, 32'hAABB_CCDD, 4'b1111);
+    check_read(32'h8008_0104, 32'hAABB_CCDD, "Case 1.1: Full Word Write");
+
+    // Bước 2: Ghi đè 2 bytes thấp bằng 0x1234_5678 (bmsk = 4'b0011)
+    // Kỳ vọng: 2 bytes cao giữ nguyên (0xAABB), 2 bytes thấp đổi thành (0x5678)
+    write_mem(32'h8008_0104, 32'h1234_5678, 4'b0011);
+    check_read(32'h8008_0104, 32'hAABB_5678, "Case 1.2: Partial Overwrite (Keep previous lanes)");
+
+    // Bước 3: Cố tình ghi ngoài vùng hợp lệ (0x800A_FFF0)
+    write_mem(32'h800A_FFF0, 32'h1234_5678, 4'b1111);
+    check_read(32'h800A_FFF0, 32'h0000_0000, "Case 1.3: Out-of-range Read returns 0");
+
+    // -------------------------------------------------------------------------
+    // Case 2: Kiểm tra toàn diện từng Byte Lane Mask (Little-Endian Verification)
+    // -------------------------------------------------------------------------
+    $display("\n>>> [DIRECTED CASE 2] Byte Lane Masks & Little-Endian Mapping <<<");
+    // Khởi tạo ô nhớ 0x8008_0010 về 0x0000_0000 trước
+    write_mem(32'h8008_0010, 32'h0000_0000, 4'b1111);
+    check_read(32'h8008_0010, 32'h0000_0000, "Case 2.0: Init Zero");
+
+    // Mask 4'b0001 (Byte 0: bit [7:0])
+    write_mem(32'h8008_0010, 32'hAA_BB_CC_11, 4'b0001);
+    check_read(32'h8008_0010, 32'h0000_0011, "Case 2.1: Write Byte 0");
+
+    // Mask 4'b0010 (Byte 1: bit [15:8])
+    write_mem(32'h8008_0010, 32'hAA_BB_22_CC, 4'b0010);
+    check_read(32'h8008_0010, 32'h0000_2211, "Case 2.2: Write Byte 1 (Keep Byte 0)");
+
+    // Mask 4'b0100 (Byte 2: bit [23:16])
+    write_mem(32'h8008_0010, 32'hAA_33_BB_CC, 4'b0100);
+    check_read(32'h8008_0010, 32'h0033_2211, "Case 2.3: Write Byte 2 (Keep Byte 0, 1)");
+
+    // Mask 4'b1000 (Byte 3: bit [31:24])
+    write_mem(32'h8008_0010, 32'h44_AA_BB_CC, 4'b1000);
+    check_read(32'h8008_0010, 32'h4433_2211, "Case 2.4: Write Byte 3 (Keep Byte 0, 1, 2)");
+
+    // Mask 4'b0000 (Không ghi byte nào, giữ nguyên toàn bộ)
+    write_mem(32'h8008_0010, 32'hFFFF_FFFF, 4'b0000);
+    check_read(32'h8008_0010, 32'h4433_2211, "Case 2.5: Write with mask 4'b0000 (No modification)");
+
+    // Mask xen kẽ 4'b1010
+    write_mem(32'h8008_0010, 32'hAA_00_55_00, 4'b1010);
+    check_read(32'h8008_0010, 32'hAA33_5511, "Case 2.6: Alternating mask 4'b1010");
+
+    // -------------------------------------------------------------------------
+    // Case 3: Kiểm tra căn lề Word khi đọc qua các Byte Offset lẻ
+    // -------------------------------------------------------------------------
+    $display("\n>>> [DIRECTED CASE 3] Word-Aligned Access with Byte Offsets <<<");
+    // Bộ nhớ đọc theo Word 32-bit nên dù addr[1:0] là 00, 01, 10 hay 11 thì dữ liệu đọc ra phải như nhau
+    check_read(32'h8008_0010, 32'hAA33_5511, "Case 3.1: Word read at Offset +0");
+    check_read(32'h8008_0011, 32'hAA33_5511, "Case 3.2: Word read at Offset +1");
+    check_read(32'h8008_0012, 32'hAA33_5511, "Case 3.3: Word read at Offset +2");
+    check_read(32'h8008_0013, 32'hAA33_5511, "Case 3.4: Word read at Offset +3");
+
+    // -------------------------------------------------------------------------
+    // Case 4: Kiểm tra các điểm biên dải nhớ (Boundary Cases)
+    // -------------------------------------------------------------------------
+    $display("\n>>> [DIRECTED CASE 4] Boundary & Out-of-Range Conditions <<<");
+    // 1. Điểm biên dưới cùng hợp lệ: 0x8008_0000
+    write_mem(START_ADDR, 32'hCAFE_BABE, 4'b1111);
+    check_read(START_ADDR, 32'hCAFE_BABE, "Case 4.1: Lower boundary (0x8008_0000)");
+
+    // 2. Điểm biên trên cùng hợp lệ (Word cuối): START_ADDR + MEM_SIZE - 4 = 0x8008_FFFC
+    write_mem(START_ADDR + MEM_SIZE - 4, 32'hDEAD_BEEF, 4'b1111);
+    check_read(START_ADDR + MEM_SIZE - 4, 32'hDEAD_BEEF, "Case 4.2: Upper boundary (0x8008_FFFC)");
+
+    // 3. Điểm sát dưới biên ngoài hợp lệ: START_ADDR - 4 = 0x8007_FFFC (Không được ghi, đọc ra 0)
+    write_mem(START_ADDR - 4, 32'h1234_5678, 4'b1111);
+    check_read(START_ADDR - 4, 32'h0000_0000, "Case 4.3: Underflow address (0x8007_FFFC)");
+
+    // 4. Điểm sát trên biên ngoài hợp lệ: START_ADDR + MEM_SIZE = 0x8009_0000 (Không được ghi, đọc ra 0)
+    write_mem(START_ADDR + MEM_SIZE, 32'h8765_4321, 4'b1111);
+    check_read(START_ADDR + MEM_SIZE, 32'h0000_0000, "Case 4.4: Overflow address (0x8009_0000)");
+
+    // -------------------------------------------------------------------------
+    // Case 5: Đọc và Ghi đồng thời trên cùng một địa chỉ (Simultaneous R/W)
+    // -------------------------------------------------------------------------
+    $display("\n>>> [DIRECTED CASE 5] Simultaneous Read and Write <<<");
+    // Theo đặc tả: Trước xung clock, o_rdata giữ giá trị cũ; sau cạnh clock tích cực, o_rdata cập nhật giá trị mới
+    write_mem(32'h8008_0050, 32'h1111_1111, 4'b1111);
+
+    @(posedge clk);
+    #1ps;
+    addr  = 32'h8008_0050;
+    wdata = 32'h2222_2222;
+    bmsk  = 4'b1111;
+    wren  = 1'b1;
+
+    // Kiểm tra trước cạnh clock
+    #1ns;
+    test_count++;
+    if (rdata !== 32'h1111_1111) begin
+      $error("[%0t] [FAIL] Simultaneous R/W: Pre-edge data error! Exp: 0x1111_1111, Got: 0x%08h", $time, rdata);
+      error_count++;
+    end else begin
+      $display("[%0t] [PASS] Simultaneous R/W: Pre-edge data holds old value (0x1111_1111)", $time);
+    end
+
+    // Xung clock diễn ra
+    @(posedge clk);
+    write_shadow_mem(32'h8008_0050, 32'h2222_2222, 4'b1111);
+    wren = 1'b0;
+    #1ns;
+    test_count++;
+    if (rdata !== 32'h2222_2222) begin
+      $error("[%0t] [FAIL] Simultaneous R/W: Post-edge data error! Exp: 0x2222_2222, Got: 0x%08h", $time, rdata);
+      error_count++;
+    end else begin
+      $display("[%0t] [PASS] Simultaneous R/W: Post-edge data updated correctly (0x2222_2222)", $time);
+    end
+
+    // =========================================================================
+    // PHẦN II: RANDOMIZED TESTS (STRESS TESTING)
+    // =========================================================================
+    $display("\n>>> [PHASE II] Starting Randomized Stress Testing (1000 Transactions) <<<");
+
+    for (int i = 0; i < 1000; i++) begin
+      bit          do_write;
+      logic [31:0] rand_addr;
+      logic [31:0] rand_data;
+      logic [3:0]  rand_mask;
+
+      void'(std::randomize(do_write));
+      void'(std::randomize(rand_data, rand_mask));
+
+      // Phân bổ: 25% sinh địa chỉ bất kỳ (kiểm tra out-of-range), 75% nằm trong dải hợp lệ
+      if ($urandom_range(0, 3) == 0) begin
+        void'(std::randomize(rand_addr));
+      end else begin
+        rand_addr = START_ADDR + $urandom_range(0, MEM_SIZE - 1);
+      end
+
+      if (do_write) begin
+        write_mem(rand_addr, rand_data, rand_mask);
+      end else begin
+        logic [31:0] exp_data;
+        exp_data = read_shadow_mem(rand_addr);
+        check_read(rand_addr, exp_data, "Random Read");
+      end
+    end
+
+    // -------------------------------------------------------------------------
+    // Báo cáo tổng kết
+    // -------------------------------------------------------------------------
+    repeat (5) @(posedge clk);
+    $display("\n================================================================");
+    if (error_count == 0) begin
+      $display(" >>> ALL %0d CHECKS PASSED SUCCESSFULLY! (Directed + Random) <<<", test_count);
+    end else begin
+      $display(" >>> VERIFICATION FAILED: %0d error(s) found across %0d checks! <<<", error_count, test_count);
+    end
+    $display("================================================================\n");
+
+    $finish;
+  end
+
+endmodule

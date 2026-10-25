@@ -1,4 +1,4 @@
-module singlecyle (
+module singlecycle (
     // Global signal
     input logic         i_clk,
     input logic         i_rstn,

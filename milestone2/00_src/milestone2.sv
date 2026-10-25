@@ -8,11 +8,12 @@ module milestone2 (
     logic [31:0]    core_dmem_addr, core_dmem_data, dmem_core_data;
     logic [3:0]     core_dmem_bmsk;
     logic           core_dmem_wren;
+    logic [31:0] w_reg [31:0];
 
     imem #(
         .START_ADDR (32'h8000_0000),
         .ADDR_WIDTH (19),
-        .PROGRAMFILE("")
+        .PROGRAMFILE("D:/HCMUT/HK261/Computer Organization and Design (EE4423)/milestone/milestone2/00_src/programfile.hex")
     ) u_imem (
         .i_clk      (i_clk),
         .i_addr     (imem_addr),         // 32-bit
@@ -33,6 +34,7 @@ module milestone2 (
         .o_dmem_bmsk    (core_dmem_bmsk),
         .o_dmem_wren    (core_dmem_wren),
         // Debug Inteface 
+        .w_reg      (w_reg),
         .o_db_valid     (o_db_valid)
     );
 

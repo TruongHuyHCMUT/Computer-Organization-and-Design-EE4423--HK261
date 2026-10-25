@@ -33,7 +33,7 @@ module alu(
     logic [31:0] sll_result, srl_result, sra_result;
     logic [31:0] slt_sum;
     logic        slt_cout, sltu_cout;
-
+                            
     // Addition: A + B
     FA_32bit add_fa(.A(i_op_a), .B(i_op_b), .Cin(1'b0), .Sum(add_result), .Cout());
 
@@ -49,7 +49,7 @@ module alu(
     FA_32bit sltu_fa(.A(i_op_a), .B(~i_op_b), .Cin(1'b1), .Sum(), .Cout(sltu_cout));
     assign sltu_result = ~sltu_cout;   // No borrow means A >= B, so A < B when cout = 0
 
-    // Logical operations
+    // Logical operations 
     assign and_result = i_op_a & i_op_b;
     assign or_result  = i_op_a | i_op_b;
     assign xor_result = i_op_a ^ i_op_b;

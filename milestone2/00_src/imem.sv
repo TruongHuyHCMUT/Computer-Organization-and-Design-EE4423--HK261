@@ -8,7 +8,7 @@ module imem #(
     output logic [31:0] o_data
 );
     localparam int unsigned MEM_DEPTH = (1 << ADDR_WIDTH);
-    logic [7:0] mem [0: MEM_DEPTH];
+    logic [7:0] mem [0: MEM_DEPTH - 1];
 
     initial begin
         $readmemh(PROGRAMFILE, mem);

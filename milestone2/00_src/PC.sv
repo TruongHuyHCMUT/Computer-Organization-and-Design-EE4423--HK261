@@ -3,19 +3,20 @@
 // Description: Program Counter Register
 //              Stores current instruction address, updates on clock edge
 // ============================================================================
-module PC(
-  input               i_clk,        // Clock
-  input               i_reset,      // Active-low reset
-  input  [31:0]       i_pc_next,    // Next PC value
-  output logic [31:0] o_pc          // Current PC value
+module pc #(
+  parameter logic [31:0] RESET_VAL = 32'h8000_0000
+)(
+  input  logic        i_clk,
+  input  logic        i_rstn,
+  input  logic [31:0] d,
+  output logic [31:0] q
 );
 
-  // Synchronous update with asynchronous reset
-  always_ff @(posedge i_clk or negedge i_reset) begin
-    if (~i_reset) begin
-      o_pc <= 32'd0;                 // Reset PC to 0
+  always_ff @(posedge i_clk or negedge i_rstn) begin
+    if (!i_rstn) begin
+      q <= RESET_VAL; 
     end else begin
-      o_pc <= i_pc_next;             // Update PC
+      q <= d;     
     end
   end
 

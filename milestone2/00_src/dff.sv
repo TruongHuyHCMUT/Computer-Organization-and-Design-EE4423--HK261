@@ -105,7 +105,7 @@ module dff_32bit (
     input logic         clk, rst_n, en,
     input logic [31:0]  d,
     output logic [31:0] q
-);
+); 
     dff_16bit dff0 (
         .clk    (clk),
         .rst_n  (rst_n),

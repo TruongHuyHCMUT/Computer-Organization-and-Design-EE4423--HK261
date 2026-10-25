@@ -37,6 +37,12 @@ module dmem #(
     assign offset_addr  = i_addr - START_ADDR;
     assign word_idx     = offset_addr[ADDR_WIDTH-1:2];
 
+    initial begin 
+        for (int i = 0; i < NUM_WORDS; i++) begin
+            mem[i] = 32'h0000_0000;
+        end 
+    end 
+
     always_ff @(posedge i_clk) begin
         if(i_wren && addr_valid) begin
             if (i_bmsk[0]) mem[word_idx][7:0] <= i_wdata[7:0];
